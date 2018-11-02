@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<title>添加用户</title>
+<link rel="stylesheet" href="css/layui.css">
+<style>
+#checkCodeLabel {
+	padding: 0px;
+}
+</style>
+<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="layui.all.js"></script>
+<script type="text/javascript">
+	var layer = layui.layer, form = layui.form;
+	var id = getQueryString("id");
+	$(function() {
+		$("#uId").val(id);
+		getCheckCode();
+	});
+
+	function getQueryString(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+		var r = window.location.search.substr(1).match(reg);
+		if (r != null)
+			return unescape(r[2]);
+		return null;
+	}
+
+	function getCheckCode() {
+		$("#checkCode").attr("src",
+				"./system/getCheckCode?id=" + id + "&_=" + Math.random());
+	}
+
+	function userLogin() {
+		$.post("./system/userLogin", {
+			"id" : id,
+			"account" : $("input[name=account]").val(),
+			"password" : $("input[name=password]").val(),
+			"checkCode" : $("input[name=checkCode]").val(),
+		}, function(data) {
+			if (data.result != "success") {
+				getCheckCode();
+				layer.alert(data.error);
+			} else {
+				layer.alert("登录成功！", function() {
+					window.parent.location.reload();
+				});
+			}
+		}, "json");
+		return false;
+	}
+</script>
+</head>
+<body>
+	<div style="margin: 20px auto; width: 80%; text-align: center;">
+		<!--模仿bootstrap的模态框-->
+		<div id="addUserDiv">
+			<form id="addUserForm" class="layui-form layui-form-pane">
+				<div class="layui-form-item">
+					<label class="layui-form-label">ID</label>
+					<div class="layui-input-inline">
+						<input id="uId" type="text" name="id" lay-verify="required"
+							autocomplete="off" class="layui-input layui-disabled">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">身份证号码</label>
+					<div class="layui-input-inline">
+						<input type="text" name="account" lay-verify="required"
+							placeholder="请输入身份证号码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">密 码</label>
+					<div class="layui-input-inline">
+						<input type="password" name="password" lay-verify="required"
+							placeholder="请输入密码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label id="checkCodeLabel" class="layui-form-label"><img
+						id="checkCode" onClick="getCheckCode()" src=""
+						style="width: 100%; height: 100%"></label>
+					<div class="layui-input-inline">
+						<input type="text" name="checkCode" lay-verify="required"
+							placeholder="请输入验证码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<a class="layui-btn" onClick="userLogin()">立即登录</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

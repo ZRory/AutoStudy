@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<title>自助学习配置中心</title>
+<link rel="stylesheet" href="css/layui.css">
+<style>
+.layui-table td, .layui-table th {
+	text-align: center;
+}
+</style>
+<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="layui.all.js"></script>
+<script type="text/javascript">
+	var layer = layui.layer, form = layui.form;
+	$(function() {
+		//layer.msg('Hello World');
+		userList();
+	});
+
+	function addUser() {
+		initNewClient();
+	}
+
+	function initNewClient() {
+		$.post("/system/initClient", function(id) {
+			layer.open({
+				type : 2,//类型
+				area : [ '400px', '326px' ],//定义宽和高
+				title : '添加新用户',//题目
+				shadeClose : false,//点击遮罩层关闭
+				content : [ './addUser.html' + '?id=' + id, 'no' ]
+			});
+		});
+	}
+
+	function exit(id) {
+		$.post("/system/userDelete", {
+			"id" : id
+		}, function(data) {
+			userList();
+		});
+	}
+
+	function stopStudy(id) {
+		layer.msg("暂时不支持暂停学习");
+	}
+
+	function startStudy(id) {
+		$.post("/system/startStudy", {
+			"id" : id
+		}, function(data) {
+			layer.msg(data);
+			userList();
+		});
+	}
+
+	function userList() {
+		$.post("/system/userList", function(users) {
+			handlerUserList(users);
+		}, "json");
+	}
+
+	function handlerUserList(users) {
+		$("#userList").html("");
+		var tbody = "";
+		$.each(users, function(key, value) {
+			var studyStateString = "";
+			var operate = "";
+			var uId = "\"" + value.id + "\"";
+			if (value.studyState == 0) {
+				studyStateString = "未开始";
+				operate = "<a href='javascript:void(0);' onclick='startStudy("
+						+ uId + ")'>开始学习</a>";
+			} else if (value.studyState == 1) {
+				studyStateString = "学习中";
+				operate = "<a href='javascript:void(0);' onclick='stopStudy("
+						+ uId + ")'>暂停学习</a>";
+			} else if (value.studyState == 2) {
+				studyStateString = "已完成";
+			}
+			operate = operate
+					+ " | <a href='javascript:void(0);' onclick='exit(" + uId
+					+ ")'>注销账户</a>";
+			tbody = tbody + "<tr><td>" + value.id + "</td><td>" + value.name
+					+ "</td><td>" + (value.loginState ? "已登录" : "未登录")
+					+ "</td><td>" + studyStateString + "</td><td>" + operate
+					+ "</td></tr>";
+		})
+		$("#userList").html(tbody);
+	}
+</script>
+</head>
+<body>
+	<div style="margin: 0px auto; width: 100%; text-align: center;">
+		<table class="layui-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>姓名</th>
+					<th>登录状态</th>
+					<th>学习状态</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody id="userList">
+			</tbody>
+		</table>
+		<button id="addUserBtn" class="layui-btn" style="margin-top: 20px;"
+			onclick="addUser()">
+			<i class="layui-icon"> &#xe608;</i> 添加新用户
+		</button>
+	</div>
+</body>
+</html>
