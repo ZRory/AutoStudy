@@ -267,7 +267,7 @@ public class HttpClientUtil {
 			requestConfig = RequestConfig.custom().setSocketTimeout(SOCKET_TIMEOUT)
 					.setConnectionRequestTimeout(CONNECTION_REQUEST_TIMEOUT).setConnectTimeout(CONNECTION_TIMEOUT)
 					// cookie策略
-					.setCookieSpec(CookieSpecs.STANDARD).setProxy(new HttpHost("localhost", 8888, "http")).build();
+					.setCookieSpec(CookieSpecs.STANDARD).build();
 			/**
 			 * 初始化请求头
 			 */
