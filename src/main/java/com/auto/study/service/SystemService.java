@@ -194,7 +194,7 @@ public class SystemService {
 			for (int i = 1; i <= times; i++) {
 				nowTime += 60;
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
