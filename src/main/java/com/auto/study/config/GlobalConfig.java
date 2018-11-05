@@ -10,7 +10,8 @@ public class GlobalConfig {
 	public static String mainPageUrl = "http://hnpi.newzhihui.cn/";
 	public static String checkCodeUrl = "http://hnpi.newzhihui.cn/validate.do";
 	public static String loginUrl = "http://hnpi.newzhihui.cn/frontLogin.do";
-	public static String studyPage = "http://hnpi.newzhihui.cn/study.do?action=toStudy&id=";
+	public static String userCenter = "http://hnpi.newzhihui.cn/userCenter.do?action=toLesson";
+	public static String studyPage = "http://hnpi.newzhihui.cn/";
 	public static String updateItemRate = "http://hnpi.newzhihui.cn/study.do?action=updateItemRate";
 
 	@Value("${server.port}")

@@ -46,8 +46,10 @@ public class SystemController {
 		ArrayList<UserListVo> userListVos = new ArrayList<>();
 		for (UserRes userRes : userList) {
 			UserListVo userListVo = new UserListVo();
-			if (userRes.getProject().isFinished()) {
-				userRes.setStudyState(2);
+			if (userRes.getProject() != null) {
+				if (userRes.getProject().isFinished()) {
+					userRes.setStudyState(2);
+				}
 			}
 			BeanUtils.copyProperties(userRes, userListVo);
 			userListVos.add(userListVo);

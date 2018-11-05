@@ -3,7 +3,6 @@ package com.auto.study.service;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,7 +65,6 @@ public class SystemService {
 		if ("success".equals(state)) {
 			userRes.setLoginState(true);
 			userRes.setName(jsonObject.get("name").toString());
-			clearUser();
 			userLoginSucProcess(userRes);
 		}
 		return result;
@@ -85,20 +83,19 @@ public class SystemService {
 		return null;
 	}
 
-	private void clearUser() {
-		Iterator<UserRes> it = userResList.iterator();
-		while (it.hasNext()) {
-			UserRes x = it.next();
-			if (!x.isLoginState()) {
-				if (x.getAccount() == null) {
-					it.remove();
-				}
-			}
-		}
-	}
+//	private void clearUser() {
+//		Iterator<UserRes> it = userResList.iterator();
+//		while (it.hasNext()) {
+//			UserRes x = it.next();
+//			if (!x.isLoginState()) {
+//				if (x.getAccount() == null) {
+//					it.remove();
+//				}
+//			}
+//		}
+//	}
 
 	public List<UserRes> userList() {
-		clearUser();
 		return userResList;
 	}
 
@@ -115,9 +112,11 @@ public class SystemService {
 		Project project = new Project();
 		long allTimes = 0L;
 		boolean finished = true;
-		project.setId("20181030091323010287084017552219");
+		String centerHtml = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.userCenter);
+		String stringid = resolveUtil.getElement(centerHtml, "div.item-line a.btn-primary").attr("href");
+		project.setId(stringid);
 		ArrayList<Class> classes = new ArrayList<>();
-		String html = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.studyPage + project.getId());
+		String html = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.studyPage + stringid);
 		Elements coruseArrays = resolveUtil.getElementArray(html, "div[du-render='electiveCourse'] div.course-list");
 		for (Element element : coruseArrays) {
 			Elements ulElements = element.getElementsByTag("ul");
@@ -181,65 +180,35 @@ public class SystemService {
 			if (sClass.isFinished()) {
 				continue;
 			}
-			long pTimes = 0;
-			for (Class class1 : classes) {
-				if (class1.getpId().equals(sClass.getpId())) {
-					pTimes += class1.getTime();
-				}
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			long time = sClass.getTime();
-			int rate = sClass.getRate();
-			long nowTime = time * (rate / 100);
-			long times = (time - nowTime) / 60 + 1;
-			for (int i = 1; i <= times; i++) {
-				nowTime += 60;
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+			HashMap<String, String> params = new HashMap<String, String>();
+			params.put("id", sClass.getId());
+			params.put("time", sClass.getTime() + "");
+			params.put("itemRate", 100 + "");
+			params.put("wareRate", 100 + "");
+			try {
+				String response = userRes.getHttpClientUtil()
+						.sendPostRequestForHtmlWithParam(GlobalConfig.updateItemRate, params);
+				JSONObject jsonObject = JSONObject.parseObject(response);
+				String state = jsonObject.get("result").toString();
+				if (!"success".equals(state)) {
+					logger.error(response);
+					logger.error("课程进度更新失败：" + userRes.getName() + sClass.getName());
+				} else {
+					logger.info("课程进度更新成功：" + userRes.getName() + sClass.getName());
 				}
-				HashMap<String, String> params = new HashMap<String, String>();
-				params.put("id", sClass.getId());
-				params.put("time", nowTime + "");
-				long round = Math.round(nowTime * 100.0 / time);
-				if (round > 100) {
-					round = 100;
-				}
-				long round2 = Math.round(nowTime * 100.0 / pTimes);
-				if (round2 > 100) {
-					round2 = 100;
-				}
-				params.put("itemRate", round + "");
-				params.put("wareRate", round2 + "");
-				try {
-					String response = userRes.getHttpClientUtil()
-							.sendPostRequestForHtmlWithParam(GlobalConfig.updateItemRate, params);
-					JSONObject jsonObject = JSONObject.parseObject(response);
-					String state = jsonObject.get("result").toString();
-					if (!"success".equals(state)) {
-						logger.error(response);
-						logger.error("课程进度更新失败：" + userRes.getName() + sClass.getName());
-					} else {
-						logger.info("课程进度更新成功：" + userRes.getName() + sClass.getName());
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-		boolean finished = true;
-		for (Class class1 : classes) {
-			if (!class1.isFinished()) {
-				finished = false;
-				break;
-			}
-		}
-		if (finished) {
-			project.setFinished(finished);
-			userRes.setStudyState(2);
-		} else {
-			userRes.setStudyState(0);
+		try {
+			userLoginSucProcess(userRes);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
-
 }

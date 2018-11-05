@@ -37,11 +37,12 @@
 	}
 
 	function exit(id) {
-		$.post("/system/userDelete", {
+		/*$.post("/system/userDelete", {
 			"id" : id
 		}, function(data) {
 			userList();
-		});
+		});*/
+		layer.msg("暂时不支持退出账号");
 	}
 
 	function stopStudy(id) {
@@ -81,9 +82,9 @@
 			} else if (value.studyState == 2) {
 				studyStateString = "已完成";
 			}
-			operate = operate
+			/*operate = operate
 					+ " | <a href='javascript:void(0);' onclick='exit(" + uId
-					+ ")'>注销账户</a>";
+					+ ")'>注销账户</a>";*/ 
 			tbody = tbody + "<tr><td>" + value.id + "</td><td>" + value.name
 					+ "</td><td>" + (value.loginState ? "已登录" : "未登录")
 					+ "</td><td>" + studyStateString + "</td><td>" + operate
