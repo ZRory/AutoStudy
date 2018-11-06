@@ -1,9 +1,14 @@
 package com.auto.study.domain;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Project {
+public class Project implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7742812740611225296L;
 	private String id;
 	private long allTimes;
 	private List<Class> classes;

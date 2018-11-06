@@ -2,6 +2,7 @@ package com.auto.study.domain.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +38,14 @@ import org.slf4j.LoggerFactory;
 /**
  * HttpClient对象工具类
  */
-public class HttpClientUtil {
+public class HttpClientUtil implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5341970301766065620L;
+	/**
+	 * 
+	 */
 	// 日志
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientUtil.class);
 	// 连接池对象

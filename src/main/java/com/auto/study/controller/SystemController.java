@@ -45,17 +45,19 @@ public class SystemController {
 	public ArrayList<UserListVo> userList() throws Exception {
 		List<UserRes> userList = systemService.userList();
 		ArrayList<UserListVo> userListVos = new ArrayList<>();
-		for (UserRes userRes : userList) {
-			UserListVo userListVo = new UserListVo();
-			if (userRes.getProject() != null) {
-				if (userRes.getProject().isFinished()) {
-					userRes.setStudyState(2);
+		if (userList != null) {
+			for (UserRes userRes : userList) {
+				UserListVo userListVo = new UserListVo();
+				if (userRes.getProject() != null) {
+					if (userRes.getProject().isFinished()) {
+						userRes.setStudyState(2);
+					}
+					BeanUtils.copyProperties(userRes, userListVo);
+					if (!StringUtils.isEmpty(userRes.getName())) {
+						userListVo.setName("*" + userRes.getName().substring(1));
+					}
+					userListVos.add(userListVo);
 				}
-				BeanUtils.copyProperties(userRes, userListVo);
-				if (!StringUtils.isEmpty(userRes.getName())) {
-					userListVo.setName("*" + userRes.getName().substring(1));
-				}
-				userListVos.add(userListVo);
 			}
 		}
 		return userListVos;

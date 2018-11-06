@@ -1,9 +1,15 @@
 package com.auto.study.domain;
 
+import java.io.Serializable;
+
 import com.auto.study.domain.util.HttpClientUtil;
 
-public class UserRes {
+public class UserRes implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6904184947090848843L;
 	private String id;
 	private String account;
 	private String password;
