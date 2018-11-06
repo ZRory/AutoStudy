@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,9 +51,12 @@ public class SystemController {
 				if (userRes.getProject().isFinished()) {
 					userRes.setStudyState(2);
 				}
+				BeanUtils.copyProperties(userRes, userListVo);
+				if (!StringUtils.isEmpty(userRes.getName())) {
+					userListVo.setName("*" + userRes.getName().substring(1));
+				}
+				userListVos.add(userListVo);
 			}
-			BeanUtils.copyProperties(userRes, userListVo);
-			userListVos.add(userListVo);
 		}
 		return userListVos;
 	}

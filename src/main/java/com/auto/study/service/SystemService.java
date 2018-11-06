@@ -71,7 +71,7 @@ public class SystemService {
 	}
 
 	private String generateId() {
-		return UUID.randomUUID().toString().replace("-", "").toUpperCase().substring(0, 11);
+		return UUID.randomUUID().toString().replace("-", "").toUpperCase().substring(0, 5);
 	}
 
 	private UserRes getUserResById(String id) throws Exception {
@@ -116,10 +116,16 @@ public class SystemService {
 		String stringid = resolveUtil.getElement(centerHtml, "div.item-line a.btn-primary").attr("href");
 		project.setId(stringid);
 		ArrayList<Class> classes = new ArrayList<>();
-		String html = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.studyPage + stringid);
+		String html;
+		try {
+			html = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.studyPage + stringid);
+		} catch (Exception e) {
+			html = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.studyPage + stringid);
+			e.printStackTrace();
+		}
 		Elements coruseArrays = resolveUtil.getElementArray(html, "div[du-render='electiveCourse'] div.course-list");
 		for (Element element : coruseArrays) {
-			Elements ulElements = element.getElementsByTag("ul");
+			Elements ulElements = element.select("ul[id]");
 			for (Element ulElement : ulElements) {
 				Element lastUl = ulElement.select("ul[id]").first();
 				Elements lis = lastUl.getElementsByTag("li");
@@ -205,9 +211,16 @@ public class SystemService {
 				e.printStackTrace();
 			}
 		}
+		userRes.setStudyState(0);
+		project.setFinished(false);
 		try {
 			userLoginSucProcess(userRes);
 		} catch (Exception e) {
+			try {
+				userLoginSucProcess(userRes);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		}
 	}
