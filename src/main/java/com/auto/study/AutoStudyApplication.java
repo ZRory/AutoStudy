@@ -14,6 +14,7 @@ public class AutoStudyApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AutoStudyApplication.class, args);
 		try {
+			System.out.println("提示:请不要关闭此窗口");
 			System.out.println("提示:X尽量不要使用IE浏览器X,请使用Chrome,火狐,360浏览器等");
 			System.out.println("浏览器访问以下网址-->配置学习账号并开始学习:");
 			System.out.println(InetAddress.getLocalHost().getHostAddress().toString() + ":" + GlobalConfig.port);

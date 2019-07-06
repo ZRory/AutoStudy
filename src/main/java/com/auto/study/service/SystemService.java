@@ -2,6 +2,7 @@ package com.auto.study.service;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class SystemService {
 	@Autowired
 	private ResolveUtil resolveUtil;
 
-	public static List<UserRes> userResList = new ArrayList<UserRes>();
+	public static List<UserRes> userResList = Collections.synchronizedList(new ArrayList<UserRes>());;
 
 	public UserRes initNewClient() throws Exception {
 		UserRes userRes = new UserRes();
@@ -51,18 +52,27 @@ public class SystemService {
 	}
 
 	public String userLogin(String id, String account, String password, String checkCode) throws Exception {
+		for (UserRes userRes : userResList) {
+			if (userRes.getAccount() != null && userRes.getAccount().equals(account)) {
+				// userDelete(id);
+				return "{\"result\":\"false\",\"language\":\"zh\",\"error\":\"您已登陆请勿重复登陆!\"}";
+			}
+		}
 		UserRes userRes = getUserResById(id);
-		userRes.setAccount(account);
-		userRes.setPassword(password);
 		HashMap<String, String> params = new HashMap<>();
 		params.put("loginName", account);
 		params.put("password", password);
 		params.put("roleType", "1");
+		params.put("unittitle", "1");
+		params.put("unit_syscode", "1");
+		params.put("type", "1");
 		params.put("vcode", checkCode);
 		String result = userRes.getHttpClientUtil().sendPostRequestForHtmlWithParam(GlobalConfig.loginUrl, params);
 		JSONObject jsonObject = JSONObject.parseObject(result);
 		String state = jsonObject.get("result").toString();
 		if ("success".equals(state)) {
+			userRes.setAccount(account);
+			userRes.setPassword(password);
 			userRes.setLoginState(true);
 			userRes.setName(jsonObject.get("name").toString());
 			userLoginSucProcess(userRes);
@@ -187,7 +197,7 @@ public class SystemService {
 				continue;
 			}
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
