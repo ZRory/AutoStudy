@@ -1,6 +1,7 @@
 package com.auto.study.service;
 
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -123,10 +124,15 @@ public class SystemService {
         JSONObject classListObject = JSONObject.parseObject(centerHtml);
         JSONArray classList = classListObject.getJSONArray("list");
         //OID GiveUp duration 时长
+        BigDecimal nowClassTime = BigDecimal.ZERO;
+        //打乱课时
+        Collections.shuffle(classList);
         for (Object temp : classList) {
             JSONObject t = JSONObject.parseObject(temp.toString());
             String OID = t.getString("OID");
             int duration = t.getInteger("duration");
+            BigDecimal classTime = t.getBigDecimal("hours");
+            nowClassTime = nowClassTime.add(classTime);
             int num = duration / 2 + duration % 2;
             while (num > 0) {
                 String result = userRes.getHttpClientUtil().sendGetRequestForHtml(GlobalConfig.updateRate + OID);
@@ -136,6 +142,9 @@ public class SystemService {
                 num--;
             }
             System.out.println(t.getString("name") + "学习完成");
+            if (nowClassTime.intValue() > 13) {
+                return;
+            }
         }
     }
 
