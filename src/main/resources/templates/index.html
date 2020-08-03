@@ -20,6 +20,9 @@
 		userList();
 	});
 
+	//列表自动刷新
+	setInterval(userList, 1000);
+
 	function addUser() {
 		initNewClient();
 	}
@@ -28,7 +31,7 @@
 		$.post("/system/initClient", function(id) {
 			layer.open({
 				type : 2,//类型
-				area : [ '400px', '326px' ],//定义宽和高
+				area : [ '400px', '380px' ],//定义宽和高
 				title : '添加新用户',//题目
 				shadeClose : false,//点击遮罩层关闭
 				content : [ './addUser.html' + '?id=' + id, 'no' ]
@@ -97,9 +100,9 @@
 <body>
 	<div style="margin: 0px auto; width: 100%; text-align: center;">
 		<hr>
-		<span style="color: red">公告：登陆后点击开始学习</span><br>
-		<span style="color: red">学习完成后登陆继续教育学习平台考试，答案全选B即可通过考试</span><br>
-		<span style="color: red">开始学习后可以关闭该网页</span>
+		<span style="color: red">公告：登陆后点击开始学习</span><br> <span
+			style="color: red">学习完成后登陆继续教育学习平台考试，答案全选B即可通过考试</span><br> <span
+			style="color: red">开始学习后可以关闭该网页</span>
 		<hr>
 		<table class="layui-table">
 			<thead>
