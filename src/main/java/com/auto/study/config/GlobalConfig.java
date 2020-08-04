@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 public class GlobalConfig {
 
 	public static String port;
-	public static String mainPageUrl = "http://hnpi.newzhihui.cn/";
+	public static String mainPageUrl = "https://nwcedu.shiwen123.com/";
 	public static String checkCodeUrl = "http://hnpi.newzhihui.cn/validate.do";
 	public static String loginUrl = "http://hnpi.newzhihui.cn/frontLogin.do";
 	public static String userCenter = "http://hnpi.newzhihui.cn/userCenter.do?action=toLesson";
