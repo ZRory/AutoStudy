@@ -92,14 +92,16 @@
 			var studyStateString = "";
 			var uId = "\"" + value.id + "\"";
 			var operate = "<a href='javascript:void(0);' onclick='resolveWork("
-					+ uId + ")'>刷新课程</a>";
+					+ uId + ")'>刷新课程</a>    ";
 			if (value.studyState == 0) {
 				studyStateString = "未开始";
-				operate = "<a href='javascript:void(0);' onclick='startStudy("
+				operate = operate
+						+ "<a href='javascript:void(0);' onclick='startStudy("
 						+ uId + ")'>开始学习</a>";
 			} else if (value.studyState == 1) {
 				studyStateString = "学习中";
-				operate = "<a href='javascript:void(0);' onclick='stopStudy("
+				operate = operate
+						+ "<a href='javascript:void(0);' onclick='stopStudy("
 						+ uId + ")'>暂停学习</a>";
 			} else if (value.studyState == 2) {
 				studyStateString = "已完成";
@@ -120,7 +122,7 @@
 <body>
 	<div style="margin: 0px auto; width: 100%; text-align: center;">
 		<hr>
-		<span style="color: red">公告：登陆后点击开始学习</span>
+		<span style="color: red">公告：登陆后点击开始学习_对应平台:师问·宛城</span>
 		<hr>
 		输入账号查询学习进度情况：<input type="text" id="account"></input> <a
 			href='javascript:void(0);' onclick='userList()'>查询</a>

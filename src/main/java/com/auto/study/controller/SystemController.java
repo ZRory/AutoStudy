@@ -15,6 +15,9 @@ import com.auto.study.domain.UserRes;
 import com.auto.study.domain.UserVo;
 import com.auto.study.service.SystemService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping(value = "/system")
 public class SystemController {
@@ -37,7 +40,7 @@ public class SystemController {
     public List<UserVo> userList(String account) throws Exception {
         List<UserRes> userList = systemService.userList();
         if (!StringUtils.isEmpty(account)) {
-            userList = userList.stream().filter(x -> x.getMobile().equals(account)).collect(Collectors.toList());
+            userList = userList.stream().filter(x -> account.equals(x.getMobile())).collect(Collectors.toList());
         }
         List<UserVo> result = new ArrayList<UserVo>();
         for (UserRes userRes : userList) {
@@ -66,7 +69,7 @@ public class SystemController {
     }
 
     @RequestMapping(value = "/startStudy", method = RequestMethod.POST)
-    public void startStudy(String id) throws Exception {
+    public String startStudy(String id) throws Exception {
         UserRes user = systemService.getUserResById(id);
         user.setStudyState(1);
         new Thread(new Runnable() {
@@ -77,10 +80,12 @@ public class SystemController {
                     systemService.startPushWork(user);
                     systemService.startLiveWork(user);
                 } catch (Exception e) {
-                    user.setStudyState(0);
+                    log.error("课程学习失败:", e);
                 }
+                user.setStudyState(0);
             }
-        });
+        }).start();
+        return "开始学习";
     }
 
     @RequestMapping(value = "/userDelete", method = RequestMethod.POST)

@@ -22,7 +22,10 @@ import com.auto.study.domain.Work;
 import com.auto.study.domain.WorkTypeEnum;
 import com.auto.study.domain.util.HttpClientUtil;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class SystemService {
 
     public static List<UserRes> userResList = Collections.synchronizedList(new ArrayList<UserRes>());;
@@ -60,7 +63,7 @@ public class SystemService {
                 userRes.setName(data.getString("User_Nickname"));
                 userRes.setToken(data.getString("User_Token"));
                 userRes.setUserId(data.getInteger("User_ID"));
-                System.out.println("新用户登录:" + userRes.getName());
+                log.info("新用户登录:" + userRes.getName());
                 //异步处理课程信息
                 new Thread(new Runnable() {
                     @Override
@@ -217,14 +220,14 @@ public class SystemService {
             work.setContent("学习了:" + content + "!");
             work.setLiveStartTime(LocalDateTime.parse(liveDetail.getString("Live_StartTime").replace(" ", "T")));
             if (work.isNotStart()) {
-                System.out.println("直播暂未开始:" + work.getName());
+                log.info("直播暂未开始:" + work.getName());
                 continue;
             }
             //直播打卡
             String punchInUrl = GlobalConfig.punchIn + "?type=1&token=" + user.getToken() + "&live_id="
                     + work.getLiveId();
             String punchInResp = httpClient.sendGetRequestForHtml(punchInUrl);
-            System.out.println("打卡结果:" + punchInResp);
+            log.info("打卡结果:" + punchInResp);
             //课程学习
             for (int i = 0; i <= work.getTotalTime(); i = i + 180) {
                 //renewal
@@ -239,11 +242,11 @@ public class SystemService {
                 req.put("name", work.getName());
                 req.put("id", work.getLiveId().toString());
                 String renewalResp = httpClient.sendPostRequestForHtmlWithParam(GlobalConfig.renewal, req);
-                //System.out.println("renewal记录结果:" + renewalResp);
+                //log.info("renewal记录结果:" + renewalResp);
                 String recordLogUrl = GlobalConfig.recordLog + "?duration=180&token=" + user.getToken() + "&file_id="
                         + work.getFileId() + "&total_time=" + work.getTotalTime() + "&learn_time=" + i;
                 String recordLogResp = httpClient.sendGetRequestForHtml(recordLogUrl);
-                //System.out.println("课程记录结果:" + recordLogResp);
+                //log.info("课程记录结果:" + recordLogResp);
                 Thread.sleep(2000);
             }
             //课程二次学习 + 延时
@@ -260,11 +263,11 @@ public class SystemService {
                 req.put("name", work.getName());
                 req.put("id", work.getLiveId().toString());
                 String renewalResp = httpClient.sendPostRequestForHtmlWithParam(GlobalConfig.renewal, req);
-                System.out.println("renewal记录结果:" + renewalResp);
+                log.info("renewal记录结果:" + renewalResp);
                 String recordLogUrl = GlobalConfig.recordLog + "?duration=180&token=" + user.getToken() + "&file_id="
                         + work.getFileId() + "&total_time=" + work.getTotalTime() + "&learn_time=" + i;
                 String recordLogResp = httpClient.sendGetRequestForHtml(recordLogUrl);
-                System.out.println("课程记录结果:" + recordLogResp);
+                log.info("课程记录结果:" + recordLogResp);
 
                 //随时查询课程状态 如果完成就continue掉,节省学习时间
                 liveResString = httpClient.sendGetRequestForHtml(liveResUrl);
@@ -280,7 +283,7 @@ public class SystemService {
             String contentUrl = "https://nwcedu.shiwen123.com/index/consult/main/ID/" + work.getLiveId()
                     + "/type/at/userID/" + user.getUserId() + "/content/" + work.getContent();
             String contentResp = httpClient.sendGetRequestForHtml(contentUrl);
-            System.out.println("留言结果:" + contentResp);
+            log.info("留言结果:" + contentResp);
 
             //更新课程列表
             resolveWorkList(user);
@@ -312,12 +315,12 @@ public class SystemService {
             String updateUrl = GlobalConfig.updateReadStatus + "?token=" + user.getToken() + "&resource_id="
                     + work.getResourceId();
             String updateResp = httpClient.sendGetRequestForHtml(updateUrl);
-            System.out.println("资源读状态更新结果:" + updateResp);
+            log.info("资源读状态更新结果:" + updateResp);
             //课程学习
             String recordLogUrl = GlobalConfig.recordLog + "?duration=60&token=" + user.getToken() + "&file_id="
                     + work.getFileId() + "&total_time=" + 1 + "&learn_time=" + 60;
             String recordLogResp = httpClient.sendGetRequestForHtml(recordLogUrl);
-            System.out.println("课程记录结果:" + recordLogResp);
+            log.info("课程记录结果:" + recordLogResp);
             Thread.sleep(2000);
             //更新课程列表
             resolveWorkList(user);
@@ -356,7 +359,7 @@ public class SystemService {
                 String addAnswerSheetUrl = GlobalConfig.addAnswerSheet + "?token=" + user.getToken() + "&file_id="
                         + work.getFileId();
                 String addAnswerSheet = httpClient.sendGetRequestForHtml(addAnswerSheetUrl);
-                System.out.println("添加新测试结果:" + addAnswerSheet);
+                log.info("添加新测试结果:" + addAnswerSheet);
             }
             //获取试卷信息
             String testPaperUrl = GlobalConfig.getTestPaper + "?token=" + user.getToken() + "&file_id="
@@ -396,12 +399,12 @@ public class SystemService {
                     //发送填表请求
                     String answerResp = httpClient.sendPostRequestForHtmlWithParam(GlobalConfig.addAnswer,
                             JSON.toJSONString(answerMain));
-                    System.out.println("回答结果:" + answerResp);
+                    log.info("回答结果:" + answerResp);
                 }
             }
             String endAnswerUrl = GlobalConfig.endAnswer + "?token=" + user.getToken() + "&file_id=" + work.getFileId();
             String endResp = httpClient.sendGetRequestForHtml(endAnswerUrl);
-            System.out.println("试卷提交结果:" + endResp);
+            log.info("试卷提交结果:" + endResp);
 
             //更新课程列表
             resolveWorkList(user);
