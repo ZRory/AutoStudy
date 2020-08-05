@@ -21,7 +21,7 @@
 	});
 
 	//列表自动刷新
-	setInterval(userList, 1000);
+	setInterval(userList, 2000);
 
 	function addUser() {
 		initNewClient();
@@ -31,7 +31,7 @@
 		$.post("/system/initClient", function(id) {
 			layer.open({
 				type : 2,//类型
-				area : [ '400px', '380px' ],//定义宽和高
+				area : [ '400px', '320px' ],//定义宽和高
 				title : '添加新用户',//题目
 				shadeClose : false,//点击遮罩层关闭
 				content : [ './addUser.html' + '?id=' + id, 'no' ]
@@ -43,6 +43,18 @@
 		$.post("/system/userDelete", {
 			"id" : id
 		}, function(data) {
+			userList();
+		});
+		//layer.msg("暂时不支持退出账号");
+	}
+
+	function resolveWork(id) {
+		$.post("/system/resolveWork", {
+			"id" : id
+		}, function(data) {
+			if (data) {
+				layer.msg("刷新成功");
+			}
 			userList();
 		});
 		//layer.msg("暂时不支持退出账号");
@@ -62,7 +74,13 @@
 	}
 
 	function userList() {
-		$.post("/system/userList", function(users) {
+		var account = $("#account").val();
+		if (account.length == 0) {
+			return;
+		}
+		$.post("/system/userList", {
+			"account" : account
+		}, function(users) {
 			handlerUserList(users);
 		}, "json");
 	}
@@ -72,8 +90,9 @@
 		var tbody = "";
 		$.each(users, function(key, value) {
 			var studyStateString = "";
-			var operate = "";
 			var uId = "\"" + value.id + "\"";
+			var operate = "<a href='javascript:void(0);' onclick='resolveWork("
+					+ uId + ")'>刷新课程</a>";
 			if (value.studyState == 0) {
 				studyStateString = "未开始";
 				operate = "<a href='javascript:void(0);' onclick='startStudy("
@@ -89,8 +108,9 @@
 					+ "    <a href='javascript:void(0);' onclick='exit(" + uId
 					+ ")'>注销账户</a>";
 			tbody = tbody + "<tr><td>" + value.id + "</td><td>" + value.name
-					+ "</td><td>" + (value.loginState ? "已登录" : "未登录")
-					+ "</td><td>" + studyStateString + "</td><td>" + operate
+					+ "</td><td>" + value.liveProcess + "</td><td>"
+					+ value.pushProcess + "</td><td>" + value.homeProcess
+					+ "</td><td>" + value.testProcess + "</td><td>" + operate
 					+ "</td></tr>";
 		})
 		$("#userList").html(tbody);
@@ -100,17 +120,19 @@
 <body>
 	<div style="margin: 0px auto; width: 100%; text-align: center;">
 		<hr>
-		<span style="color: red">公告：登陆后点击开始学习</span><br> <span
-			style="color: red">学习完成后登陆继续教育学习平台考试，答案全选B即可通过考试</span><br> <span
-			style="color: red">开始学习后可以关闭该网页</span>
+		<span style="color: red">公告：登陆后点击开始学习</span>
 		<hr>
+		输入账号查询学习进度情况：<input type="text" id="account"></input> <a
+			href='javascript:void(0);' onclick='userList()'>查询</a>
 		<table class="layui-table">
 			<thead>
 				<tr>
 					<th>ID</th>
 					<th>姓名</th>
-					<th>登录状态</th>
-					<th>学习状态</th>
+					<th>直播学习进度</th>
+					<th>推送学习进度</th>
+					<th>作业任务进度</th>
+					<th>试卷评测进度</th>
 					<th>操作</th>
 				</tr>
 			</thead>

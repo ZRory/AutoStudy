@@ -1,104 +1,40 @@
 package com.auto.study.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.auto.study.domain.util.HttpClientUtil;
 
+import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRes implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6904184947090848843L;
-	private String id;
-	private String account;
-	private String password;
-	private boolean loginState;
-	private int studyState;
-	private String name;
-	private Project project;
-	private HttpClientUtil httpClientUtil;
+    private static final long serialVersionUID = -6904184947090848843L;
+    private String            id;
+    private Integer           userId;
+    private String            mobile;
+    private String            password;
+    private Boolean           loginState       = false;
+    private Integer           studyState;
+    private String            name;
+    private String            token;
+    private HttpClientUtil    httpClientUtil;
 
-	public UserRes() {
-		super();
-		httpClientUtil = new HttpClientUtil();
-	}
-
-	public UserRes(String id, String account, String password, boolean loginState, int studyState, String name,
-			Project project, HttpClientUtil httpClientUtil) {
-		super();
-		this.id = id;
-		this.account = account;
-		this.password = password;
-		this.loginState = loginState;
-		this.studyState = studyState;
-		this.name = name;
-		this.project = project;
-		this.httpClientUtil = httpClientUtil;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getAccount() {
-		return account;
-	}
-
-	public void setAccount(String account) {
-		this.account = account;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public boolean isLoginState() {
-		return loginState;
-	}
-
-	public void setLoginState(boolean loginState) {
-		this.loginState = loginState;
-	}
-
-	public int getStudyState() {
-		return studyState;
-	}
-
-	public void setStudyState(int studyState) {
-		this.studyState = studyState;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
-	public HttpClientUtil getHttpClientUtil() {
-		return httpClientUtil;
-	}
-
-	public void setHttpClientUtil(HttpClientUtil httpClientUtil) {
-		this.httpClientUtil = httpClientUtil;
-	}
+    //直播课
+    private List<Work>        liveWrok         = new ArrayList<Work>();
+    //推送课
+    private List<Work>        pushWrok         = new ArrayList<Work>();
+    //作业任务
+    private List<Work>        homeWrok         = new ArrayList<Work>();
+    //测试任务
+    private List<Work>        testWrok         = new ArrayList<Work>();
 
 }

@@ -18,7 +18,7 @@
 	var id = getQueryString("id");
 	$(function() {
 		$("#uId").val(id);
-		getCheckCode();
+		//getCheckCode();
 	});
 
 	function getQueryString(name) {
@@ -41,11 +41,11 @@
 			"password" : $("input[name=password]").val(),
 			"checkCode" : $("input[name=checkCode]").val(),
 		}, function(data) {
-			if (data.result != "success") {
-				getCheckCode();
-				layer.alert(data.error);
+			if (data.code != "0") {
+				//getCheckCode();
+				layer.alert(data.message);
 			} else {
-				layer.alert("登录成功！", function() {
+				layer.alert("登录成功,请输入账号查询学习情况并开始学习!", function() {
 					window.parent.location.reload();
 				});
 			}
@@ -67,10 +67,10 @@
 					</div>
 				</div>
 				<div class="layui-form-item">
-					<label class="layui-form-label">身份证号</label>
+					<label class="layui-form-label">手机号</label>
 					<div class="layui-input-inline">
 						<input type="text" name="account" lay-verify="required"
-							placeholder="请输入身份证号" autocomplete="off" class="layui-input">
+							placeholder="请输入手机号" autocomplete="off" class="layui-input">
 					</div>
 				</div>
 				<div class="layui-form-item">
@@ -80,7 +80,7 @@
 							placeholder="请输入密码" autocomplete="off" class="layui-input">
 					</div>
 				</div>
-				<div class="layui-form-item">
+				<!-- <div class="layui-form-item">
 					<label id="checkCodeLabel" class="layui-form-label"><img
 						id="checkCode" onClick="getCheckCode()" src=""
 						style="width: 100%; height: 100%"></label>
@@ -88,9 +88,9 @@
 						<input type="text" name="checkCode" lay-verify="required"
 							placeholder="请输入验证码" autocomplete="off" class="layui-input">
 					</div>
-				</div>
+				</div> -->
 				<div class="layui-form-item">
-					<a class="layui-btn" target="_blank" href="http://hnpi.newzhihui.cn/frontLogin.do?action=tochangePassword&type=1">修改密码</a>
+					<a class="layui-btn" target="_blank" href="https://nwcedu.shiwen123.com/#/getback">修改密码</a>
 					<a class="layui-btn" onClick="userLogin()">立即登录</a>
 				</div>
 			</form>
