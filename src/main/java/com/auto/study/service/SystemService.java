@@ -185,22 +185,30 @@ public class SystemService {
 
     //开始直播课学习
     public void startLiveWork(UserRes user) throws Exception {
-        HttpClientUtil httpClient = user.getHttpClientUtil();
+
         List<Work> liveWroks = user.getLiveWrok();
         for (Work work : liveWroks) {
-            //学习完成的不学习
-            if (work.getStatusCode() == 5) {
-                continue;
-            }
-            //查询直播课id
-            String liveResUrl = GlobalConfig.workListResUrl + "?token=" + user.getToken() + "&homework_id="
-                    + work.getWorkId() + "&class_id=" + work.getClassId();
-            String liveResString = httpClient.sendGetRequestForHtml(liveResUrl);
-            JSONObject liveRes = JSONObject.parseObject(liveResString);
-            JSONObject live = JSONObject.parseObject(liveRes.getJSONArray("data").get(0).toString());
+            startLiveWork(user, work);
+        }
+    }
+
+    private void startLiveWork(UserRes user, Work work) throws Exception {
+        HttpClientUtil httpClient = user.getHttpClientUtil();
+        //学习完成的不学习
+        if (work.getStatusCode() == 5) {
+            return;
+        }
+        //查询直播课id
+        String liveResUrl = GlobalConfig.workListResUrl + "?token=" + user.getToken() + "&homework_id="
+                + work.getWorkId() + "&class_id=" + work.getClassId();
+        String liveResString = httpClient.sendGetRequestForHtml(liveResUrl);
+        JSONObject liveRes = JSONObject.parseObject(liveResString);
+        JSONArray lives = liveRes.getJSONArray("data");
+        for (Object liveObj : lives) {
+            JSONObject live = JSONObject.parseObject(liveObj.toString());
             //获取状态码
             if (live.getInteger("StatusCode") == 1) {
-                continue;
+                return;
             }
             work.setResourceId(live.getInteger("HomeWorkResource_ID"));
             work.setLiveId(live.getInteger("Live_ID"));
@@ -213,7 +221,9 @@ public class SystemService {
             JSONObject liveDetail = liveDetailResp.getJSONObject("data");
             work.setTotalTime(liveDetail.getInteger("Live_TotalTime"));
             String content = liveDetail.getString("Live_CourseContent");
-            content = content.substring(content.indexOf(">") + 1, content.lastIndexOf("<"));
+            if (content.contains(">") && content.contains("<")) {
+                content = content.substring(content.indexOf(">") + 1, content.lastIndexOf("<"));
+            }
             if (content.contains(">") && content.contains("<")) {
                 content = content.substring(content.indexOf(">") + 1, content.lastIndexOf("<"));
             }
@@ -221,7 +231,7 @@ public class SystemService {
             work.setLiveStartTime(LocalDateTime.parse(liveDetail.getString("Live_StartTime").replace(" ", "T")));
             if (work.isNotStart()) {
                 log.info("直播暂未开始:" + work.getName());
-                continue;
+                return;
             }
             //直播打卡
             String punchInUrl = GlobalConfig.punchIn + "?type=1&token=" + user.getToken() + "&live_id="
@@ -229,6 +239,10 @@ public class SystemService {
             String punchInResp = httpClient.sendGetRequestForHtml(punchInUrl);
             log.info("打卡结果:" + punchInResp);
             //课程学习
+            Integer totalTime = work.getTotalTime();
+            if (totalTime == null) {
+                totalTime = 7200;
+            }
             for (int i = 0; i <= work.getTotalTime(); i = i + 180) {
                 //renewal
                 Map<String, String> req = new HashMap<String, String>();
@@ -275,7 +289,7 @@ public class SystemService {
                 live = JSONObject.parseObject(liveRes.getJSONArray("data").get(0).toString());
                 //获取状态码
                 if (live.getInteger("StatusCode") == 1) {
-                    continue;
+                    break;
                 }
                 Thread.sleep(180000);
             }
@@ -284,10 +298,9 @@ public class SystemService {
                     + "/type/at/userID/" + user.getUserId() + "/content/" + work.getContent();
             String contentResp = httpClient.sendGetRequestForHtml(contentUrl);
             log.info("留言结果:" + contentResp);
-
-            //更新课程列表
-            resolveWorkList(user);
         }
+        //更新课程列表
+        resolveWorkList(user);
     }
 
     //开始直播课学习
@@ -304,24 +317,75 @@ public class SystemService {
                     + work.getWorkId() + "&class_id=" + work.getClassId();
             String liveResString = httpClient.sendGetRequestForHtml(liveResUrl);
             JSONObject liveRes = JSONObject.parseObject(liveResString);
-            JSONObject live = JSONObject.parseObject(liveRes.getJSONArray("data").get(0).toString());
-            //获取状态码
-            if (live.getInteger("StatusCode") == 1) {
-                continue;
+            JSONArray lives = liveRes.getJSONArray("data");
+            for (Object liveObj : lives) {
+                JSONObject live = JSONObject.parseObject(liveObj.toString());
+                //获取状态码
+                if (live.getInteger("StatusCode") == 1) {
+                    continue;
+                }
+                work.setResourceId(live.getInteger("HomeWorkResource_ID"));
+                work.setFileId(live.getInteger("File_ID"));
+                work.setLiveId(live.getInteger("HomeWorkResource_TableID"));
+                work.setTotalTime(new Double(Math.random() * (4000 - 2000 + 1) + 1800).intValue());
+                //更新资源读状态
+                String updateUrl = GlobalConfig.updateReadStatus + "?token=" + user.getToken() + "&resource_id="
+                        + work.getResourceId();
+                String updateResp = httpClient.sendGetRequestForHtml(updateUrl);
+                log.info("资源读状态更新结果:" + updateResp);
+                //课程学习
+                for (int i = 0; i <= work.getTotalTime(); i = i + 180) {
+                    //renewal
+                    Map<String, String> req = new HashMap<String, String>();
+                    req.put("mark", "View_Video");
+                    req.put("source", "2");
+                    req.put("property", "1");
+                    req.put("msg", "120");
+                    req.put("token", user.getToken());
+                    req.put("name", work.getName());
+                    req.put("id", work.getLiveId().toString());
+                    String renewalResp = httpClient.sendPostRequestForHtmlWithParam(GlobalConfig.renewal, req);
+                    //log.info("renewal记录结果:" + renewalResp);
+                    String recordLogUrl = GlobalConfig.recordLog + "?duration=180&token=" + user.getToken()
+                            + "&file_id=" + work.getFileId() + "&total_time=" + work.getTotalTime() + "&learn_time="
+                            + i;
+                    String recordLogResp = httpClient.sendGetRequestForHtml(recordLogUrl);
+                    //log.info("课程记录结果:" + recordLogResp);
+                    Thread.sleep(2000);
+                }
+                //课程二次学习 + 延时
+                for (int i = 0; i <= work.getTotalTime(); i = i + 180) {
+                    //renewal
+                    Map<String, String> req = new HashMap<String, String>();
+                    req.put("Memo", "t_live");
+                    req.put("mark", "Live_Playback");
+                    req.put("source", "2");
+                    req.put("property", "0");
+                    req.put("msg", "120");
+                    req.put("tb", "t_live");
+                    req.put("token", user.getToken());
+                    req.put("name", work.getName());
+                    req.put("id", work.getLiveId().toString());
+                    String renewalResp = httpClient.sendPostRequestForHtmlWithParam(GlobalConfig.renewal, req);
+                    log.info("renewal记录结果:" + renewalResp);
+                    String recordLogUrl = GlobalConfig.recordLog + "?duration=180&token=" + user.getToken()
+                            + "&file_id=" + work.getFileId() + "&total_time=" + work.getTotalTime() + "&learn_time="
+                            + i;
+                    String recordLogResp = httpClient.sendGetRequestForHtml(recordLogUrl);
+                    log.info("课程记录结果:" + recordLogResp);
+
+                    //随时查询课程状态 如果完成就continue掉,节省学习时间
+                    liveResString = httpClient.sendGetRequestForHtml(liveResUrl);
+                    liveRes = JSONObject.parseObject(liveResString);
+                    live = JSONObject.parseObject(liveRes.getJSONArray("data").get(0).toString());
+                    //获取状态码
+                    if (live.getInteger("StatusCode") == 1) {
+                        break;
+                    }
+                    Thread.sleep(180000);
+                }
+                Thread.sleep(2000);
             }
-            work.setResourceId(live.getInteger("HomeWorkResource_ID"));
-            work.setFileId(live.getInteger("File_ID"));
-            //更新资源读状态
-            String updateUrl = GlobalConfig.updateReadStatus + "?token=" + user.getToken() + "&resource_id="
-                    + work.getResourceId();
-            String updateResp = httpClient.sendGetRequestForHtml(updateUrl);
-            log.info("资源读状态更新结果:" + updateResp);
-            //课程学习
-            String recordLogUrl = GlobalConfig.recordLog + "?duration=60&token=" + user.getToken() + "&file_id="
-                    + work.getFileId() + "&total_time=" + 1 + "&learn_time=" + 60;
-            String recordLogResp = httpClient.sendGetRequestForHtml(recordLogUrl);
-            log.info("课程记录结果:" + recordLogResp);
-            Thread.sleep(2000);
             //更新课程列表
             resolveWorkList(user);
         }
